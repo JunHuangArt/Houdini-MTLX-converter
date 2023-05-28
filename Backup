@@ -1,0 +1,61 @@
+import hou
+import MaterialX as mx
+
+# Get the selected node
+selected_node = hou.selectedNodes()[0]
+
+def convert_principled_to_mtlx(selected_node):
+    # Get the base color texture path
+    base_color_path = selected_node.parm("basecolor_texture").eval()
+    roughness_path = selected_node.parm("rough_texture").eval()
+    base_normal_path = selected_node.parm("baseNormal_texture").eval()
+    opacity_path = selected_node.parm("opaccolor_texture").eval()
+    metallic_path = selected_node.parm("metallic_texture").eval()
+
+    # Create a MaterialX Document
+    doc = mx.createDocument()
+
+    # Create a base color image node and set its file name using hou.node().createNode() method
+    base_color_node = hou.node("/mat").createNode("mtlximage")
+    base_color_node.setName("base_color")
+    base_color_node.parm("file").set(base_color_path)
+
+    # Create a roughness image node and set its file name using hou.node().createNode() method
+    roughness_node = hou.node("/mat").createNode("mtlximage")
+    roughness_node.setName("roughness")
+    roughness_node.parm("file").set(roughness_path)
+
+    # Create a base normal image node and set its file name using hou.node().createNode() method
+    base_normal_node = hou.node("/mat").createNode("mtlximage")
+    base_normal_node.setName("base_normal")
+    base_normal_node.parm("file").set(base_normal_path)
+
+    # Create an opacity image node and set its file name using hou.node().createNode() method
+    opacity_node = hou.node("/mat").createNode("mtlximage")
+    opacity_node.setName("opacity")
+    opacity_node.parm("file").set(opacity_path)
+
+    # Create a metallic image node and set its file name using hou.node().createNode() method
+    metallic_node = hou.node("/mat").createNode("mtlximage")
+    metallic_node.setName("metallic")
+    metallic_node.parm("file").set(metallic_path)
+
+    # Create a normal map node and set its scale to 2.0
+    normal_node = hou.node("/mat").createNode("mtlxnormalmap")
+    normal_node.setName("normal_map")
+    normal_node.parm("scale").set(2.0)
+    normal_node.setInput(0, base_normal_node)
+
+    # Create a MaterialX standard surface node
+    standard_surface_node = hou.node("/mat").createNode("mtlxstandard_surface")
+    standard_surface_node.setName("standard_surface")
+
+    # Connect the nodes
+    standard_surface_node.setInput(1, base_color_node)
+    standard_surface_node.setInput(6, roughness_node)
+    standard_surface_node.setInput(40, normal_node)
+    standard_surface_node.setInput(38, opacity_node)
+    standard_surface_node.setInput(3, metallic_node)
+
+   
+convert_principled_to_mtlx(selected_node)
